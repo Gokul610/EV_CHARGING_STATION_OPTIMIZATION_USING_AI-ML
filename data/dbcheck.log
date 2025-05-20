@@ -1,0 +1,26 @@
+2025-05-20 23:50:21,256 - INFO - DuckDB read-only connection established.
+2025-05-20 23:50:21,256 - INFO - Querying api_call_logs
+2025-05-20 23:51:26,123 - INFO - Querying station_status
+2025-05-20 23:51:26,574 - INFO - Querying traffic_conditions
+2025-05-20 23:51:26,589 - INFO - Querying weather_info
+2025-05-20 23:51:27,099 - INFO - DuckDB connection closed.
+2025-05-20 23:53:09,751 - INFO - DuckDB read-only connection established.
+2025-05-20 23:53:09,760 - INFO - Querying api_call_logs
+2025-05-20 23:53:47,045 - INFO - api_call_logs retrieved 2 rows
+2025-05-20 23:53:48,786 - INFO - Querying station_status
+2025-05-20 23:53:49,505 - INFO - station_status retrieved 5 rows
+2025-05-20 23:53:49,523 - INFO - Querying traffic_conditions
+2025-05-20 23:53:49,527 - INFO - traffic_conditions retrieved 0 rows
+2025-05-20 23:53:49,531 - INFO - Querying weather_info
+2025-05-20 23:53:49,535 - INFO - weather_info retrieved 0 rows
+2025-05-20 23:53:49,896 - INFO - DuckDB connection closed.
+2025-05-21 01:18:39,653 - INFO - DuckDB read-only connection established.
+2025-05-21 01:18:39,763 - INFO - Querying api_call_logs
+2025-05-21 01:19:01,737 - INFO - api_call_logs retrieved 2 rows
+2025-05-21 01:19:02,845 - INFO - Querying station_status
+2025-05-21 01:19:04,482 - INFO - station_status retrieved 5 rows
+2025-05-21 01:19:04,514 - INFO - Querying traffic_conditions
+2025-05-21 01:19:04,597 - INFO - traffic_conditions retrieved 5 rows
+2025-05-21 01:19:04,607 - INFO - Querying weather_info
+2025-05-21 01:19:04,612 - INFO - weather_info retrieved 0 rows
+2025-05-21 01:19:04,624 - INFO - DuckDB connection closed.

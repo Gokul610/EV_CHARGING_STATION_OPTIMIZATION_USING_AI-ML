@@ -1,0 +1,127 @@
+2025-05-20 23:32:43,354 - INFO - DuckDB connection established (read_only=False).
+2025-05-20 23:32:43,469 - INFO - DuckDB tables checked/created.
+2025-05-20 23:32:43,514 - INFO - DuckDB connection closed after table initialization.
+2025-05-20 23:32:43,515 - INFO - Inserting sample data into DuckDB...
+2025-05-20 23:32:43,519 - INFO - Storing data for API call fetch_real_time_station_data at (9.0548, 77.4335)
+2025-05-20 23:32:43,568 - INFO - DuckDB connection established (read_only=False).
+2025-05-20 23:32:43,569 - INFO - Logging DataFrame for fetch_real_time_station_data with 2 rows
+2025-05-20 23:32:44,108 - INFO - Logged API call fetch_real_time_station_data
+2025-05-20 23:32:44,108 - INFO - DuckDB connection established (read_only=False).
+2025-05-20 23:32:44,198 - INFO - Station data columns: ['api_station_id', 'title', 'lat', 'lon', 'distance_m', 'operational_status', 'available_connectors', 'total_connectors', 'price', 'supported_connectors', 'network_provider', 'amenities', 'timestamp', 'fetch_timestamp']
+2025-05-20 23:32:44,626 - ERROR - Error populating station_status: Binder Error: Table "station_status" does not have a column with name "distance_m"
+2025-05-20 23:32:44,627 - INFO - DuckDB connection closed after populating station_status.
+2025-05-20 23:32:44,987 - INFO - DuckDB connection closed after logging API call.
+2025-05-20 23:32:44,987 - INFO - Successfully stored data for API call fetch_real_time_station_data
+2025-05-20 23:32:44,988 - INFO - Storing data for API call geocode_place at (9.0548, 77.4335)
+2025-05-20 23:32:47,429 - INFO - DuckDB connection established (read_only=False).
+2025-05-20 23:32:47,430 - INFO - Logging non-DataFrame for geocode_place: {"place": "Surandai, Tamil Nadu", "coordinates": [9.0548, 77.4335]}...
+2025-05-20 23:32:47,610 - INFO - Logged API call geocode_place
+2025-05-20 23:32:48,017 - INFO - DuckDB connection closed after logging API call.
+2025-05-20 23:32:48,019 - INFO - Successfully stored data for API call geocode_place
+2025-05-20 23:32:48,123 - INFO - DuckDB connection established (read_only=False).
+2025-05-20 23:32:48,124 - INFO - Traffic data columns: ['jam_factor', 'timestamp', 'fetch_timestamp']
+2025-05-20 23:32:48,128 - ERROR - Error populating traffic_conditions: Binder Error: Table "traffic_conditions" does not have a column with name "timestamp"
+2025-05-20 23:32:48,137 - INFO - DuckDB connection closed after populating traffic_conditions.
+2025-05-20 23:32:48,209 - INFO - DuckDB connection established (read_only=False).
+2025-05-20 23:32:48,211 - INFO - Weather data columns: ['temperature', 'humidity', 'timestamp', 'fetch_timestamp']
+2025-05-20 23:32:48,217 - ERROR - Error populating weather_info: Binder Error: Table "weather_info" does not have a column with name "timestamp"
+2025-05-20 23:32:48,254 - INFO - DuckDB connection closed after populating weather_info.
+2025-05-20 23:32:48,254 - INFO - Sample data insertion completed.
+2025-05-20 23:32:48,298 - INFO - DuckDB connection established (read_only=True).
+2025-05-20 23:32:48,298 - INFO - 
+Latest 5 API call logs:
+2025-05-20 23:32:48,849 - INFO - 
+Latest 5 station_status records:
+2025-05-20 23:32:49,566 - INFO - 
+Latest 5 traffic_conditions records:
+2025-05-20 23:32:49,808 - INFO - 
+Latest 5 weather_info records:
+2025-05-20 23:32:50,228 - INFO - DuckDB connection closed after testing.
+2025-05-20 23:48:35,988 - INFO - DuckDB connection established (read_only=False).
+2025-05-20 23:48:36,405 - INFO - DuckDB tables checked/created.
+2025-05-20 23:48:36,413 - INFO - DuckDB connection closed after table initialization.
+2025-05-20 23:48:36,413 - INFO - Inserting sample data into DuckDB...
+2025-05-20 23:48:36,449 - INFO - DuckDB connection established (read_only=False).
+2025-05-20 23:48:39,506 - INFO - Deleted old sample api_call_logs before 2025-05-20 18:18:36.414487
+2025-05-20 23:48:39,594 - INFO - Deleted old sample station_status before 2025-05-20 18:18:36.414487
+2025-05-20 23:48:40,878 - INFO - Deleted old sample traffic_conditions before 2025-05-20 18:18:36.414487
+2025-05-20 23:48:41,687 - INFO - Deleted old sample weather_info before 2025-05-20 18:18:36.414487
+2025-05-20 23:48:42,535 - INFO - DuckDB connection closed after clearing old sample data.
+2025-05-20 23:48:45,555 - INFO - Storing data for API call fetch_real_time_station_data at (9.0548, 77.4335)
+2025-05-20 23:48:53,936 - INFO - DuckDB connection established (read_only=False).
+2025-05-20 23:48:54,507 - INFO - Logging DataFrame for fetch_real_time_station_data with 2 rows
+2025-05-20 23:48:56,964 - INFO - Logged API call fetch_real_time_station_data with 1 record(s)
+2025-05-20 23:48:56,964 - INFO - DuckDB connection established (read_only=False).
+2025-05-20 23:48:58,854 - INFO - Station data columns: ['api_station_id', 'title', 'lat', 'lon', 'distance_m', 'operational_status', 'available_connectors', 'total_connectors', 'price', 'supported_connectors', 'network_provider', 'amenities', 'timestamp', 'fetch_timestamp']
+2025-05-20 23:49:00,815 - ERROR - Error populating station_status: Binder Error: Table "station_status" does not have a column with name "distance_m"
+2025-05-20 23:49:00,815 - INFO - DuckDB connection closed after populating station_status.
+2025-05-20 23:49:02,138 - INFO - DuckDB connection closed after logging API call.
+2025-05-20 23:49:02,139 - INFO - Successfully stored data for API call fetch_real_time_station_data
+2025-05-20 23:49:02,139 - INFO - Storing data for API call geocode_place at (9.0548, 77.4335)
+2025-05-20 23:49:02,293 - INFO - DuckDB connection established (read_only=False).
+2025-05-20 23:49:02,294 - INFO - Logging non-DataFrame for geocode_place: {"place": "Surandai, Tamil Nadu", "coordinates": [9.0548, 77.4335]}...
+2025-05-20 23:49:04,684 - INFO - Logged API call geocode_place with 1 record(s)
+2025-05-20 23:49:06,252 - INFO - DuckDB connection closed after logging API call.
+2025-05-20 23:49:06,253 - INFO - Successfully stored data for API call geocode_place
+2025-05-20 23:49:06,779 - INFO - DuckDB connection established (read_only=False).
+2025-05-20 23:49:06,781 - INFO - Traffic data columns: ['jam_factor', 'timestamp', 'fetch_timestamp']
+2025-05-20 23:49:06,790 - ERROR - Error populating traffic_conditions: Binder Error: Table "traffic_conditions" does not have a column with name "timestamp"
+2025-05-20 23:49:06,795 - INFO - DuckDB connection closed after populating traffic_conditions.
+2025-05-20 23:49:06,927 - INFO - DuckDB connection established (read_only=False).
+2025-05-20 23:49:06,927 - ERROR - Unexpected error populating weather_info: name 'traffic_data' is not defined
+2025-05-20 23:49:06,963 - INFO - DuckDB connection closed after populating weather_info.
+2025-05-20 23:49:06,963 - INFO - Sample data insertion completed.
+2025-05-20 23:49:07,015 - INFO - DuckDB connection established (read_only=True).
+2025-05-20 23:49:07,015 - INFO - 
+Latest 5 API call logs:
+2025-05-20 23:49:14,697 - INFO - 
+Latest 5 station_status records:
+2025-05-20 23:49:15,214 - INFO - 
+Latest 5 traffic_conditions records:
+2025-05-20 23:49:15,222 - INFO - 
+Latest 5 weather_info records:
+2025-05-20 23:49:15,238 - INFO - DuckDB connection closed after testing.
+2025-05-20 23:54:16,086 - INFO - DuckDB connection established (read_only=False).
+2025-05-20 23:54:16,333 - INFO - DuckDB tables checked/created.
+2025-05-20 23:54:16,338 - INFO - DuckDB connection closed after table initialization.
+2025-05-20 23:54:16,338 - INFO - Inserting sample data into DuckDB...
+2025-05-20 23:54:16,365 - INFO - DuckDB connection established (read_only=False).
+2025-05-20 23:54:17,579 - INFO - Deleted old sample api_call_logs before 2025-05-20 18:24:16.338864
+2025-05-20 23:54:17,581 - INFO - Deleted old sample station_status before 2025-05-20 18:24:16.338864
+2025-05-20 23:54:17,582 - INFO - Deleted old sample traffic_conditions before 2025-05-20 18:24:16.338864
+2025-05-20 23:54:17,583 - INFO - Deleted old sample weather_info before 2025-05-20 18:24:16.338864
+2025-05-20 23:54:18,463 - INFO - DuckDB connection closed after clearing old sample data.
+2025-05-20 23:54:19,210 - INFO - Storing data for API call fetch_real_time_station_data at (9.0548, 77.4335)
+2025-05-20 23:54:19,915 - INFO - DuckDB connection established (read_only=False).
+2025-05-20 23:54:20,047 - INFO - Logging DataFrame for fetch_real_time_station_data with 2 rows
+2025-05-20 23:54:21,774 - INFO - Logged API call fetch_real_time_station_data with 1 record(s)
+2025-05-20 23:54:21,775 - INFO - DuckDB connection established (read_only=False).
+2025-05-20 23:54:22,245 - INFO - Station data columns: ['api_station_id', 'title', 'lat', 'lon', 'distance_m', 'operational_status', 'available_connectors', 'total_connectors', 'price', 'supported_connectors', 'network_provider', 'amenities', 'timestamp', 'fetch_timestamp']
+2025-05-20 23:54:24,496 - ERROR - Error populating station_status: Binder Error: Table "station_status" does not have a column with name "distance_m"
+2025-05-20 23:54:24,496 - INFO - DuckDB connection closed after populating station_status.
+2025-05-20 23:54:25,768 - INFO - DuckDB connection closed after logging API call.
+2025-05-20 23:54:25,769 - INFO - Successfully stored data for API call fetch_real_time_station_data
+2025-05-20 23:54:25,769 - INFO - Storing data for API call geocode_place at (9.0548, 77.4335)
+2025-05-20 23:54:25,810 - INFO - DuckDB connection established (read_only=False).
+2025-05-20 23:54:25,810 - INFO - Logging non-DataFrame for geocode_place: {"place": "Surandai, Tamil Nadu", "coordinates": [9.0548, 77.4335]}...
+2025-05-20 23:54:26,324 - INFO - Logged API call geocode_place with 1 record(s)
+2025-05-20 23:54:28,638 - INFO - DuckDB connection closed after logging API call.
+2025-05-20 23:54:28,638 - INFO - Successfully stored data for API call geocode_place
+2025-05-20 23:54:28,704 - INFO - DuckDB connection established (read_only=False).
+2025-05-20 23:54:28,705 - INFO - Traffic data columns: ['jam_factor', 'timestamp', 'fetch_timestamp']
+2025-05-20 23:54:28,709 - ERROR - Error populating traffic_conditions: Binder Error: Table "traffic_conditions" does not have a column with name "timestamp"
+2025-05-20 23:54:28,714 - INFO - DuckDB connection closed after populating traffic_conditions.
+2025-05-20 23:54:28,744 - INFO - DuckDB connection established (read_only=False).
+2025-05-20 23:54:28,745 - ERROR - Unexpected error populating weather_info: name 'traffic_data' is not defined
+2025-05-20 23:54:28,750 - INFO - DuckDB connection closed after populating weather_info.
+2025-05-20 23:54:28,750 - INFO - Sample data insertion completed.
+2025-05-20 23:54:28,781 - INFO - DuckDB connection established (read_only=True).
+2025-05-20 23:54:28,781 - INFO - 
+Latest 5 API call logs:
+2025-05-20 23:54:28,799 - INFO - 
+Latest 5 station_status records:
+2025-05-20 23:54:28,876 - INFO - 
+Latest 5 traffic_conditions records:
+2025-05-20 23:54:28,888 - INFO - 
+Latest 5 weather_info records:
+2025-05-20 23:54:28,919 - INFO - DuckDB connection closed after testing.

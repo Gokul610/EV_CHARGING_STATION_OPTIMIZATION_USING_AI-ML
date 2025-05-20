@@ -1,0 +1,16 @@
+[
+    "Availability",
+    "Connector Type_encoded",
+    "Maintenance_encoded",
+    "Network Provider_encoded",
+    "Power_kW",
+    "Price_encoded",
+    "Wait Time",
+    "dayofweek",
+    "dayofyear",
+    "geohash_encoded",
+    "hour",
+    "month",
+    "weekofyear",
+    "year"
+]
