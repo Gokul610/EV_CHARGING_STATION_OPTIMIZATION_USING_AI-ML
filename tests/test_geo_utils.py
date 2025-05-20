@@ -1,6 +1,7 @@
 import pandas as pd
 import sys
 import os
+import pandas
 
 # Explicitly add project root to Python's path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
