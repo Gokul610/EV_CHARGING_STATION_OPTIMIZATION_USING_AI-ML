@@ -318,12 +318,10 @@ if 'location_method' not in st.session_state:
     st.session_state['location_method'] = "Enter Place Name"  # Default to place name input
 if 'geolocation_result' not in st.session_state:
     st.session_state['geolocation_result'] = None  # Store geolocation result
-if 'geolocation_attempts' not in st.session_state:
-    st.session_state['geolocation_attempts'] = 0  # Track attempts for retry
 
 # Location input function
 def get_user_location():
-    """Get user location using embedded HTML/JavaScript with retry mechanism."""
+    """Get user location using embedded HTML/JavaScript and ensure display."""
     st.subheader("Your Location")
     location_method = st.radio(
         "Location input method:",
@@ -343,7 +341,6 @@ def get_user_location():
             try:
                 geolocation_data = json.loads(result_input)
                 st.session_state['geolocation_result'] = geolocation_data
-                st.session_state['geolocation_attempts'] = 0  # Reset attempts
                 logging.debug(f"Geolocation result from input: {geolocation_data}")
             except json.JSONDecodeError:
                 logging.error(f"Invalid geolocation result: {result_input}")
@@ -358,7 +355,6 @@ def get_user_location():
                 st.session_state['user_lon'] = longitude
                 st.session_state['user_place_name'] = "Automatically Detected"
                 st.session_state['geolocation_result'] = None  # Clear result
-                st.session_state['geolocation_attempts'] = 0  # Reset attempts
                 st.success(f"✅ Detected location: ({latitude:.6f}, {longitude:.6f})")
                 logging.info(f"Geolocation successful: ({latitude}, {longitude})")
                 st.rerun()
@@ -374,74 +370,70 @@ def get_user_location():
                     st.warning("Location request timed out. Try again or use another method.")
                 st.session_state['location_method'] = "Enter Place Name"
                 st.session_state['geolocation_result'] = None  # Clear result
-                st.session_state['geolocation_attempts'] = 0  # Reset attempts
                 logging.error(f"Geolocation failed: {error_msg} (Code: {error_code})")
                 st.rerun()
 
-        # Retry mechanism
-        max_attempts = 3
-        if st.session_state['geolocation_attempts'] < max_attempts:
-            # Embedded HTML/JavaScript for geolocation
-            html_code = f"""
-            <button id="geolocationButton">Detect My Location</button>
-            <input type="hidden" id="geolocationResult">
-            <script>
-            const button = document.getElementById('geolocationButton');
-            const resultInput = document.getElementById('geolocationResult');
-            button.addEventListener('click', () => {{
-                if (navigator.geolocation) {{
-                    navigator.geolocation.getCurrentPosition(
-                        (position) => {{
-                            const result = JSON.stringify({{
-                                lat: position.coords.latitude,
-                                lon: position.coords.longitude
-                            }});
-                            resultInput.value = result;
-                            const input = document.querySelector('input[data-testid="stTextInput"]');
-                            if (input) {{
-                                input.value = result;
-                                input.dispatchEvent(new Event('input', {{ bubbles: true }}));
-                            }}
-                        }},
-                        (error) => {{
-                            const result = JSON.stringify({{
-                                error: error.message,
-                                code: error.code
-                            }});
-                            resultInput.value = result;
-                            const input = document.querySelector('input[data-testid="stTextInput"]');
-                            if (input) {{
-                                input.value = result;
-                                input.dispatchEvent(new Event('input', {{ bubbles: true }}));
-                            }}
-                        }},
-                        {{ timeout: 15000, maximumAge: 60000, enableHighAccuracy: true }}
-                    );
-                }} else {{
-                    const result = JSON.stringify({{
-                        error: 'Geolocation not supported by your browser',
-                        code: -1
-                    }});
-                    resultInput.value = result;
-                    const input = document.querySelector('input[data-testid="stTextInput"]');
-                    if (input) {{
-                        input.value = result;
-                        input.dispatchEvent(new Event('input', {{ bubbles: true }}));
-                    }}
-                }}
-            }});
-            </script>
-            """
-            components.html(html_code, height=50)
-            st.session_state['geolocation_attempts'] += 1
-            logging.debug(f"Geolocation attempt {st.session_state['geolocation_attempts']} of {max_attempts}")
-        else:
-            st.error("Failed to detect location after multiple attempts. Switching to place name input.")
-            st.session_state['location_method'] = "Enter Place Name"
-            st.session_state['geolocation_attempts'] = 0
-            logging.error("Geolocation failed after max attempts")
-            st.rerun()
-
+        # Embedded HTML/JavaScript for geolocation
+        html_code = """
+        <button id="geolocationButton">Detect My Location</button>
+        <input type="hidden" id="geolocationResult">
+        <script>
+        const button = document.getElementById('geolocationButton');
+        const resultInput = document.getElementById('geolocationResult');
+        button.addEventListener('click', () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const result = JSON.stringify({
+                            lat: position.coords.latitude,
+                            lon: position.coords.longitude
+                        });
+                        resultInput.value = result;
+                        const input = document.querySelector('input[data-testid="stTextInput"]');
+                        if (input) {
+                            input.value = result;
+                            input.dispatchEvent(new Event('input', { bubbles: true }));
+                            input.dispatchEvent(new Event('change', { bubbles: true }));
+                        } else {
+                            console.error('Streamlit input not found');
+                        }
+                    },
+                    (error) => {
+                        const result = JSON.stringify({
+                            error: error.message,
+                            code: error.code
+                        });
+                        resultInput.value = result;
+                        const input = document.querySelector('input[data-testid="stTextInput"]');
+                        if (input) {
+                            input.value = result;
+                            input.dispatchEvent(new Event('input', { bubbles: true }));
+                            input.dispatchEvent(new Event('change', { bubbles: true }));
+                        } else {
+                            console.error('Streamlit input not found');
+                        }
+                    },
+                    { timeout: 15000, maximumAge: 60000, enableHighAccuracy: true }
+                );
+            } else {
+                const result = JSON.stringify({
+                    error: 'Geolocation not supported by your browser',
+                    code: -1
+                });
+                resultInput.value = result;
+                const input = document.querySelector('input[data-testid="stTextInput"]');
+                if (input) {
+                    input.value = result;
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                } else {
+                    console.error('Streamlit input not found');
+                }
+            }
+        });
+        </script>
+        """
+        components.html(html_code, height=50)
         if latitude is not None and longitude is not None:
             st.info(f"Current location: ({latitude:.6f}, {longitude:.6f})")
         else:
@@ -460,7 +452,6 @@ def get_user_location():
             st.session_state['user_lat'], st.session_state['user_lon'] = latitude, longitude
             st.session_state['user_place_name'] = f"Manual: ({latitude:.6f}, {longitude:.6f})"
             st.session_state['geolocation_result'] = None  # Clear result
-            st.session_state['geolocation_attempts'] = 0  # Reset attempts
             logging.info(f"Manual coordinates set: ({latitude}, {longitude})")
         else:
             st.warning("Please enter valid latitude (-90 to 90) and longitude (-180 to 180) values.")
@@ -476,7 +467,6 @@ def get_user_location():
                     st.session_state['user_lat'], st.session_state['user_lon'] = latitude, longitude
                     st.session_state['user_place_name'] = place_name
                     st.session_state['geolocation_result'] = None  # Clear result
-                    st.session_state['geolocation_attempts'] = 0  # Reset attempts
                     st.success(f"📍 Geocoded: {place_name} → ({latitude:.6f}, {longitude:.6f})")
                     logging.info(f"Geocoded place: {place_name} -> ({latitude}, {longitude})")
                     st.rerun()
