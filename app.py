@@ -318,10 +318,51 @@ if 'location_method' not in st.session_state:
     st.session_state['location_method'] = "Enter Place Name"  # Default to place name input
 if 'geolocation_result' not in st.session_state:
     st.session_state['geolocation_result'] = None  # Store geolocation result
+if 'geolocation_triggered' not in st.session_state:
+    st.session_state['geolocation_triggered'] = False  # Track button click
+
+# Function to process geolocation result
+def process_geolocation_result():
+    """Process geolocation result from JavaScript postMessage."""
+    if st.session_state['geolocation_result']:
+        try:
+            geolocation_data = st.session_state['geolocation_result']
+            logging.debug(f"Processing geolocation result: {geolocation_data}")
+            if 'lat' in geolocation_data:
+                st.session_state['user_lat'] = geolocation_data['lat']
+                st.session_state['user_lon'] = geolocation_data['lon']
+                st.session_state['user_place_name'] = "Automatically Detected"
+                st.session_state['geolocation_result'] = None
+                st.session_state['geolocation_triggered'] = False
+                st.success(f"✅ Detected location: ({geolocation_data['lat']:.6f}, {geolocation_data['lon']:.6f})")
+                logging.info(f"Geolocation successful: ({geolocation_data['lat']}, {geolocation_data['lon']})")
+                st.rerun()
+            elif 'error' in geolocation_data:
+                error_msg = geolocation_data['error']
+                error_code = geolocation_data.get('code', -1)
+                st.error(f"Location detection failed: {error_msg} (Error code: {error_code}). Switching to place name input.")
+                if error_code == 1:
+                    st.warning("You denied location access. Please allow it in your browser settings or use another method.")
+                elif error_code == 2:
+                    st.warning("Location unavailable. Ensure your device's location services are enabled and GPS is active.")
+                elif error_code == 3:
+                    st.warning("Location request timed out. Try again or use another method.")
+                st.session_state['location_method'] = "Enter Place Name"
+                st.session_state['geolocation_result'] = None
+                st.session_state['geolocation_triggered'] = False
+                logging.error(f"Geolocation failed: {error_msg} (Code: {error_code})")
+                st.rerun()
+        except Exception as e:
+            st.error(f"Error processing geolocation result: {str(e)}. Switching to place name input.")
+            logging.error(f"Geolocation processing error: {str(e)}", exc_info=True)
+            st.session_state['location_method'] = "Enter Place Name"
+            st.session_state['geolocation_result'] = None
+            st.session_state['geolocation_triggered'] = False
+            st.rerun()
 
 # Location input function
 def get_user_location():
-    """Get user location using embedded HTML/JavaScript and ensure display."""
+    """Get user location using embedded HTML/JavaScript."""
     st.subheader("Your Location")
     location_method = st.radio(
         "Location input method:",
@@ -335,109 +376,72 @@ def get_user_location():
 
     if location_method == "Detected Location":
         st.info("Click 'Detect My Location' to allow your browser to access your location.")
-        # Hidden text input to capture geolocation result
-        result_input = st.text_input("Geolocation Result", value="", key=f"geolocation_input_{st.session_state['current_page']}", label_visibility="collapsed")
-        if result_input:
-            try:
-                geolocation_data = json.loads(result_input)
-                st.session_state['geolocation_result'] = geolocation_data
-                logging.debug(f"Geolocation result from input: {geolocation_data}")
-            except json.JSONDecodeError:
-                logging.error(f"Invalid geolocation result: {result_input}")
-                st.session_state['geolocation_result'] = {'error': 'Invalid result format', 'code': -1}
+        if st.button("Detect My Location", key=f"geolocation_button_{st.session_state['current_page']}"):
+            st.session_state['geolocation_triggered'] = True
+            logging.debug("Detect My Location button clicked")
 
-        # Process geolocation result
-        if st.session_state['geolocation_result']:
-            geolocation_data = st.session_state['geolocation_result']
-            if 'lat' in geolocation_data:
-                latitude, longitude = geolocation_data['lat'], geolocation_data['lon']
-                st.session_state['user_lat'] = latitude
-                st.session_state['user_lon'] = longitude
-                st.session_state['user_place_name'] = "Automatically Detected"
-                st.session_state['geolocation_result'] = None  # Clear result
-                st.success(f"✅ Detected location: ({latitude:.6f}, {longitude:.6f})")
-                logging.info(f"Geolocation successful: ({latitude}, {longitude})")
-                st.rerun()
-            elif 'error' in geolocation_data:
-                error_msg = geolocation_data['error']
-                error_code = geolocation_data.get('code', -1)
-                st.error(f"Location detection failed: {error_msg} (Error code: {error_code}). Switching to place name input.")
-                if error_code == 1:
-                    st.warning("You denied location access. Please allow it in your browser settings or use another method.")
-                elif error_code == 2:
-                    st.warning("Location unavailable. Ensure your device's location services are enabled and GPS is active.")
-                elif error_code == 3:
-                    st.warning("Location request timed out. Try again or use another method.")
-                st.session_state['location_method'] = "Enter Place Name"
-                st.session_state['geolocation_result'] = None  # Clear result
-                logging.error(f"Geolocation failed: {error_msg} (Code: {error_code})")
-                st.rerun()
-
-        # Embedded HTML/JavaScript for geolocation
-        html_code = """
-        <button id="geolocationButton">Detect My Location</button>
-        <input type="hidden" id="geolocationResult">
-        <script>
-        const button = document.getElementById('geolocationButton');
-        const resultInput = document.getElementById('geolocationResult');
-        button.addEventListener('click', () => {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const result = JSON.stringify({
-                            lat: position.coords.latitude,
-                            lon: position.coords.longitude
-                        });
-                        resultInput.value = result;
-                        const input = document.querySelector('input[data-testid="stTextInput"]');
-                        if (input) {
-                            input.value = result;
-                            input.dispatchEvent(new Event('input', { bubbles: true }));
-                            input.dispatchEvent(new Event('change', { bubbles: true }));
-                        } else {
-                            console.error('Streamlit input not found');
-                        }
-                    },
-                    (error) => {
-                        const result = JSON.stringify({
-                            error: error.message,
-                            code: error.code
-                        });
-                        resultInput.value = result;
-                        const input = document.querySelector('input[data-testid="stTextInput"]');
-                        if (input) {
-                            input.value = result;
-                            input.dispatchEvent(new Event('input', { bubbles: true }));
-                            input.dispatchEvent(new Event('change', { bubbles: true }));
-                        } else {
-                            console.error('Streamlit input not found');
-                        }
-                    },
-                    { timeout: 15000, maximumAge: 60000, enableHighAccuracy: true }
-                );
-            } else {
-                const result = JSON.stringify({
-                    error: 'Geolocation not supported by your browser',
-                    code: -1
-                });
-                resultInput.value = result;
-                const input = document.querySelector('input[data-testid="stTextInput"]');
-                if (input) {
-                    input.value = result;
-                    input.dispatchEvent(new Event('input', { bubbles: true }));
-                    input.dispatchEvent(new Event('change', { bubbles: true }));
+        if st.session_state['geolocation_triggered']:
+            # Embedded HTML/JavaScript for geolocation
+            html_code = """
+            <script>
+            function getLocation() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const result = {
+                                lat: position.coords.latitude,
+                                lon: position.coords.longitude
+                            };
+                            window.parent.postMessage({ type: 'GEOLOCATION_RESULT', data: result }, '*');
+                        },
+                        (error) => {
+                            const result = {
+                                error: error.message,
+                                code: error.code
+                            };
+                            window.parent.postMessage({ type: 'GEOLOCATION_RESULT', data: result }, '*');
+                        },
+                        { timeout: 15000, maximumAge: 60000, enableHighAccuracy: true }
+                    );
                 } else {
-                    console.error('Streamlit input not found');
+                    const result = {
+                        error: 'Geolocation not supported by your browser',
+                        code: -1
+                    };
+                    window.parent.postMessage({ type: 'GEOLOCATION_RESULT', data: result }, '*');
                 }
             }
-        });
-        </script>
-        """
-        components.html(html_code, height=50)
+            getLocation();
+            </script>
+            """
+            components.html(html_code, height=0)
+
+            # JavaScript to capture postMessage
+            js_listener = """
+            <script>
+            window.addEventListener('message', (event) => {
+                if (event.data.type === 'GEOLOCATION_RESULT') {
+                    const result = JSON.stringify(event.data.data);
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.id = 'geolocationResult';
+                    input.value = result;
+                    document.body.appendChild(input);
+                    window.parent.postMessage({ type: 'STREAMLIT_UPDATE', data: result }, '*');
+                }
+            });
+            </script>
+            """
+            components.html(js_listener, height=0)
+
+            # Button to check for result
+            if st.button("Check Geolocation Result", key=f"check_geolocation_{st.session_state['current_page']}", on_click=process_geolocation_result):
+                pass  # on_click triggers process_geolocation_result
+
         if latitude is not None and longitude is not None:
             st.info(f"Current location: ({latitude:.6f}, {longitude:.6f})")
         else:
-            st.warning("No location detected yet. Please click 'Detect My Location' or choose another method.")
+            st.warning("No location detected yet. Please click 'Detect My Location' and allow permission.")
 
     elif location_method == "Enter Lat/Lon":
         latitude = st.number_input(
@@ -451,7 +455,8 @@ def get_user_location():
         if latitude != 0.0 and longitude != 0.0 and -90 <= latitude <= 90 and -180 <= longitude <= 180:
             st.session_state['user_lat'], st.session_state['user_lon'] = latitude, longitude
             st.session_state['user_place_name'] = f"Manual: ({latitude:.6f}, {longitude:.6f})"
-            st.session_state['geolocation_result'] = None  # Clear result
+            st.session_state['geolocation_result'] = None
+            st.session_state['geolocation_triggered'] = False
             logging.info(f"Manual coordinates set: ({latitude}, {longitude})")
         else:
             st.warning("Please enter valid latitude (-90 to 90) and longitude (-180 to 180) values.")
@@ -466,7 +471,8 @@ def get_user_location():
                     latitude, longitude = coords
                     st.session_state['user_lat'], st.session_state['user_lon'] = latitude, longitude
                     st.session_state['user_place_name'] = place_name
-                    st.session_state['geolocation_result'] = None  # Clear result
+                    st.session_state['geolocation_result'] = None
+                    st.session_state['geolocation_triggered'] = False
                     st.success(f"📍 Geocoded: {place_name} → ({latitude:.6f}, {longitude:.6f})")
                     logging.info(f"Geocoded place: {place_name} -> ({latitude}, {longitude})")
                     st.rerun()
