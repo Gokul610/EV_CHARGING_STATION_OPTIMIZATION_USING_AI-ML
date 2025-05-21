@@ -287,6 +287,11 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Sidebar navigation (Step 9.3)
+
+# Setup logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Navigation sidebar
 st.sidebar.title("Navigation")
 pages = {
     "🚗 Real-time Station Dashboard": "dashboard",
@@ -296,6 +301,8 @@ pages = {
     "📡 Real-Time Data & Simulation": "simulation",
     "📂 Data & Insights Panel": "data_display"
 }
+
+# Initialize session state for navigation
 if 'current_page' not in st.session_state:
     st.session_state['current_page'] = "dashboard"
 current_page_index = list(pages.values()).index(st.session_state['current_page'])
@@ -307,101 +314,116 @@ if 'user_lat' not in st.session_state:
     st.session_state['user_lat'] = None
     st.session_state['user_lon'] = None
     st.session_state['user_place_name'] = ""
+if 'location_method' not in st.session_state:
+    st.session_state['location_method'] = "Enter Place Name"  # Default to place name input
 
-# Haversine distance function
-def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    """Calculate distance in kilometers between two points using Haversine formula."""
-    from math import radians, sin, cos, sqrt, atan2
-    R = 6371  # Earth's radius in km
-    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
-    dlat = lat2 - lat1
-    dlon = lon2 - lon1
-    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
-    c = 2 * atan2(sqrt(a), sqrt(1-a))
-    return R * c * 1000  # Return in meters
-
-# Location input function for reuse across pages
-def get_user_location(default_lat: float = 9.0548, default_lon: float = 77.4335):
-    # Initialize session state if not set
-    if 'user_lat' not in st.session_state or st.session_state['user_lat'] is None:
-        st.session_state['user_lat'] = default_lat
-    if 'user_lon' not in st.session_state or st.session_state['user_lon'] is None:
-        st.session_state['user_lon'] = default_lon
-    if 'user_place_name' not in st.session_state:
-        st.session_state['user_place_name'] = "Default Location"
-
-    # Attempt geolocation if default values are still set
-    if st.session_state['user_lat'] == default_lat and st.session_state['user_lon'] == default_lon:
-        st.info("Attempting automatic location detection...")
-        try:
-            geolocation_result = streamlit_js_eval(js_code="""
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                            window.parent.postMessage({
-                                type: 'streamlit:setComponentValue',
-                                value: JSON.stringify({lat: position.coords.latitude, lon: position.coords.longitude}),
-                            }, '*');
-                        },
-                        (error) => {
-                            window.parent.postMessage({
-                                type: 'streamlit:setComponentValue',
-                                value: null,
-                            }, '*');
-                        }
-                    );
-                } else {
-                    window.parent.postMessage({
-                        type: 'streamlit:setComponentValue',
-                        value: null,
-                    }, '*');
-                }
-            """, key='dashboard_geolocation', want_output=True)
-            if geolocation_result and geolocation_result != 'streamlit_component_value_undefined':
-                geolocation_data = json.loads(geolocation_result)
-                if geolocation_data.get('lat'):
-                    st.session_state['user_lat'] = geolocation_data['lat']
-                    st.session_state['user_lon'] = geolocation_data['lon']
-                    st.session_state['user_place_name'] = "Automatically Detected"
-                    st.success(f"✅ Detected location: ({geolocation_data['lat']:.6f}, {geolocation_data['lon']:.6f})")
-                    st.rerun()
-        except Exception as e:
-            st.warning(f"Automatic location detection failed: {e}")
-            logging.error(f"Geolocation error: {e}", exc_info=True)
-
-    # Location input
+# Location input function
+def get_user_location():
+    """Get user location with permission-based geolocation and fallback options, without default coordinates."""
     st.subheader("Your Location")
-    location_method = st.radio("Location input method:", ("Detected Location", "Enter Lat/Lon", "Enter Place Name"), index=0)
+    location_method = st.radio(
+        "Location input method:",
+        ("Detected Location", "Enter Lat/Lon", "Enter Place Name"),
+        index=["Detected Location", "Enter Lat/Lon", "Enter Place Name"].index(st.session_state['location_method']),
+        key="location_method_radio"
+    )
+    st.session_state['location_method'] = location_method
+
     latitude, longitude = st.session_state['user_lat'], st.session_state['user_lon']
 
-    # Ensure latitude and longitude are not None
-    latitude = latitude if latitude is not None else default_lat
-    longitude = longitude if longitude is not None else default_lon
-
     if location_method == "Detected Location":
-        st.info(f"Using detected location: ({latitude:.6f}, {longitude:.6f})")
-    elif location_method == "Enter Lat/Lon":
-        latitude = st.number_input("Latitude:", value=float(latitude), format="%.6f")
-        longitude = st.number_input("Longitude:", value=float(longitude), format="%.6f")
-        st.session_state['user_lat'], st.session_state['user_lon'] = latitude, longitude
-        st.session_state['user_place_name'] = f"Manual: ({latitude:.6f}, {longitude:.6f})"
-    else:
-        place_name = st.text_input("Place Name:", value=st.session_state['user_place_name'])
-        if st.button("Geocode Place"):
-            coords = geocode_place(place_name)
-            if coords:
-                latitude, longitude = coords
-                st.session_state['user_lat'], st.session_state['user_lon'] = latitude, longitude
-                st.session_state['user_place_name'] = place_name
-                st.success(f"📍 Geocoded: {place_name} → ({latitude:.6f}, {longitude:.6f})")
+        st.info("Click below to allow location access in your browser.")
+        if st.button("Detect My Location", key="detect_location_button"):
+            try:
+                # Use a simpler JavaScript call to ensure permission prompt
+                geolocation_result = streamlit_js_eval(
+                    js_code="""
+                        if (navigator.geolocation) {
+                            return new Promise((resolve, reject) => {
+                                navigator.geolocation.getCurrentPosition(
+                                    (position) => {
+                                        resolve(JSON.stringify({
+                                            lat: position.coords.latitude,
+                                            lon: position.coords.longitude
+                                        }));
+                                    },
+                                    (error) => {
+                                        resolve(JSON.stringify({error: error.message}));
+                                    },
+                                    {timeout: 10000, maximumAge: 60000}
+                                );
+                            });
+                        } else {
+                            return JSON.stringify({error: 'Geolocation not supported by your browser'});
+                        }
+                    """,
+                    key='geolocation_request',
+                    want_output=True
+                )
+                if geolocation_result and geolocation_result != 'streamlit_component_value_undefined':
+                    geolocation_data = json.loads(geolocation_result)
+                    if 'error' in geolocation_data:
+                        st.error(f"Location detection failed: {geolocation_data['error']}. Switching to place name input.")
+                        st.session_state['location_method'] = "Enter Place Name"
+                        st.rerun()
+                    elif geolocation_data.get('lat'):
+                        latitude, longitude = geolocation_data['lat'], geolocation_data['lon']
+                        st.session_state['user_lat'] = latitude
+                        st.session_state['user_lon'] = longitude
+                        st.session_state['user_place_name'] = "Automatically Detected"
+                        st.success(f"✅ Detected location: ({latitude:.6f}, {longitude:.6f})")
+                        st.rerun()
+                else:
+                    st.error("Geolocation request failed. Please try another method.")
+                    st.session_state['location_method'] = "Enter Place Name"
+                    st.rerun()
+            except Exception as e:
+                st.error(f"Geolocation error: {str(e)}. Switching to place name input.")
+                logging.error(f"Geolocation error: {e}", exc_info=True)
+                st.session_state['location_method'] = "Enter Place Name"
                 st.rerun()
+        if latitude is not None and longitude is not None:
+            st.info(f"Current location: ({latitude:.6f}, {longitude:.6f})")
+        else:
+            st.warning("No location detected yet. Please click 'Detect My Location' or choose another method.")
+
+    elif location_method == "Enter Lat/Lon":
+        latitude = st.number_input(
+            "Latitude:", value=latitude if latitude is not None else 0.0,
+            min_value=-90.0, max_value=90.0, step=0.000001, format="%.6f", key="lat_input"
+        )
+        longitude = st.number_input(
+            "Longitude:", value=longitude if longitude is not None else 0.0,
+            min_value=-180.0, max_value=180.0, step=0.000001, format="%.6f", key="lon_input"
+        )
+        if latitude != 0.0 and longitude != 0.0 and -90 <= latitude <= 90 and -180 <= longitude <= 180:
+            st.session_state['user_lat'], st.session_state['user_lon'] = latitude, longitude
+            st.session_state['user_place_name'] = f"Manual: ({latitude:.6f}, {longitude:.6f})"
+        else:
+            st.warning("Please enter valid latitude (-90 to 90) and longitude (-180 to 180) values.")
+            latitude, longitude = None, None
+
+    else:  # Enter Place Name
+        place_name = st.text_input("Place Name:", value=st.session_state['user_place_name'], key="place_name_input")
+        if st.button("Geocode Place", key="geocode_button"):
+            if place_name.strip():
+                coords = geocode_place(place_name)
+                if coords:
+                    latitude, longitude = coords
+                    st.session_state['user_lat'], st.session_state['user_lon'] = latitude, longitude
+                    st.session_state['user_place_name'] = place_name
+                    st.success(f"📍 Geocoded: {place_name} → ({latitude:.6f}, {longitude:.6f})")
+                    st.rerun()
+                else:
+                    st.error(f"Could not geocode: {place_name}")
+                    logging.error(f"Geocoding failed for: {place_name}")
+                    latitude, longitude = None, None
             else:
-                st.error(f"Could not geocode: {place_name}")
-                logging.error(f"Geocoding failed for: {place_name}")
+                st.warning("Please enter a valid place name.")
 
     return latitude, longitude
 
-# Real-time Station Dashboard (Step 10)
+# Real-time Station Dashboard
 def show_real_time_dashboard():
     st.header("🚗 Real-Time Charging Station Dashboard")
     st.write("Find nearby charging stations with real-time data.")
