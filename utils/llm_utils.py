@@ -11,7 +11,7 @@ import time
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Load Google API key
-GOOGLE_API_KEY = "AIzaSyBWOQVIPBH0nkg8wg5Smcjkkp4Y4cWF9L4"
+GOOGLE_API_KEY = "AIzaSyBdW7BTy4iEfGEZCeaKVbz1lv9bkYH5H4k"
 if not GOOGLE_API_KEY:
     logging.error("GOOGLE_API_KEY not set.")
     raise ValueError("GOOGLE_API_KEY not set.")
